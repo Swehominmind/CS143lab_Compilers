@@ -12,8 +12,15 @@ class Stack inherits IO{
    container : String <- "";--类属性后面要有分号
    pointer : Int <- ~1;
 
-   show() : String{
-      container--只有方法后面的花括号里没有分号
+   show() : String{--只有方法后面的花括号里没有分号
+      let i : Int <- pointer, out : String <- "" in
+      {
+         while 0 <= i loop{
+            out <- out.concat(container.substr(i, 1)).concat("\n");
+            i <- i-1;
+         }pool;
+         out;
+      }
    };
 
    push(s : String) : String
@@ -43,15 +50,17 @@ class Main inherits IO {
    main() : Object 
    {
       {
-         out_string("Welcome to my stack\n> ");   
+         out_string("Welcome to my stack\n");   
          while not lstc = "x" loop
          {
+            out_string("> ");
             inp <- in_string();
+            --out_int(inp.length());
             let i : Int <- 0, len : Int <- inp.length() in
             {
                while not i = len 
                loop
-                  if inp.substr(i, 1) = "x"
+                  if inp.substr(i, 1) = "x" 
                   then 
                   {
                      len <- i+1;
@@ -59,7 +68,7 @@ class Main inherits IO {
                   } 
                   else
                   {
-                     if inp.substr(i, 1) = "s" 
+                     if inp.substr(i, 1) = "d" 
                      then 
                      {
                         --out_string("trying to out \n");
@@ -74,7 +83,7 @@ class Main inherits IO {
                      i <- i + 1;
                   }fi
                pool;
-               lstc <- inp.substr(i - 1, 1); 
+               lstc <- if 0 < i then inp.substr(i - 1, 1) else "" fi; 
             };
          }pool;
       }
