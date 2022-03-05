@@ -82,15 +82,66 @@ class Stack inherits IO{
       fi
    };
 
+   (* opr_add(): execute operation add in the stack
+    * return the result in Int format
+    *)
    opr_add() : Int{
-      1
+      let resI : Int, resS : String in{
+         resI <- atoi.a2i(pop()) + atoi.a2i(pop());
+         resS <- atoi.i2a(resI);
+         push(resS);
+         resI;
+      } 
    };
+
+   (* opr_switch(): execute operation switch in the stack
+    * with no return value
+    *)
+   opr_switch() : Object{
+      let elem1 : String, elem2 : String in
+      {
+         if isempty() then 
+         {
+            out_string("Error: Trying to switch empty stack\n");
+            abort();
+         }
+         else
+         {
+            elem1 <- pop();
+            if isempty() then 
+            {
+               out_string("Error: Trying to switch stack with only one frame\n");
+               abort();
+            }
+            else elem2 <- pop() fi;
+         }fi;
+         push(elem1);
+         push(elem2);
+      }
+   };
+
+   (* execute()：根据栈顶内容执行以下三种操作
+    * +：将后两个元素相加后重新压入栈
+    * s：互换 s 之后两个元素在栈中的位置
+    * 如果栈为空或者栈顶元素为整数，则不进行任何操作
+    * with no return value
+    *)
+   execute() : Object{
+      if isempty() then self else
+         let opr : String <- pop() in 
+            if opr = "+" then opr_add() else 
+               if opr = "s" then opr_switch() else
+                  push(opr)
+               fi
+            fi
+      fi
+   };
+
 };
 
 class Main inherits IO {
 
    s : Stack <- new Stack;
-   lstc : String <- "";
    inp : String <- "";
 
    main() : Object 
@@ -101,12 +152,17 @@ class Main inherits IO {
          inp <- in_string();   
          while not inp = "x" loop
          {
-            if inp.length() = 0 then self else s.push(inp) fi;
+            if inp.length() = 0 then self else
+               if inp = "e" then s.execute() else
+                  if inp = "d" then s.show(true) else
+                     s.push(inp)
+                  fi
+               fi
+            fi;
             out_string("> ");
             inp <- in_string();
          }pool;
-         s.show(true);
-         while not s.isempty() loop s.pop() pool;
+         out_string("stack exited, content remained in the stack(if any): \n");
          s.show(true);
       }
    };
