@@ -7,37 +7,83 @@
  *  Skeleton file
  *)
 
-
 class Stack inherits IO{
-   container : String <- "";--类属性后面要有分号
-   pointer : Int <- ~1;
+   (*
+   * 一个字符串即为整个栈的内存空间，每个栈帧占据多个字符，一个栈帧有两部分组成：
+   * 1. 栈内容 2. 3位的上一个栈帧的尾部内存索引（这个位置会是上一个栈帧的2索引或是栈顶）
+   *)
+   container : String <- "";
+   pointer : Int <- ~3; --栈顶指针，指向最后一个栈帧的索引位第一位，初始时为栈顶-3
+   atoi : A2I <- new A2I;
 
-   show() : String{--只有方法后面的花括号里没有分号
-      let i : Int <- pointer, out : String <- "" in
+   (* show(flag:Bool) : look up all the frame in the stack
+    * in a top to bottom order
+    * with blank line as a seperator
+    * return a String same to the output
+    * set output flag true to output the result to standard IO
+    *)
+   show(flag : Bool) : String{
+      let i : Int <- pointer, last : Int, out : String <- "" in
       {
          while 0 <= i loop{
-            out <- out.concat(container.substr(i, 1)).concat("\n");
-            i <- i-1;
+            last <- atoi.a2i(container.substr(i, 3));
+            out <- out.concat(container.substr(last+3, i-last-3)).concat("\n");
+            i <- last;
          }pool;
+         if flag then out_string(out) else self fi;
          out;
       }
    };
 
-   push(s : String) : String
+   (* isempty(): return true if the stack is empty, false if not *)
+   isempty() : Bool{
+      pointer = ~3
+   };
+
+   (* push(s:String): push String s to the stack 
+    * with no return value
+   *)
+   push(s : String) : Object
    {
+      let last : Int <- container.length() - 3 , index : String <- "" in
       {
-         --out_string("Entered push\n");
-         let i : Int <- 0, len : Int <- s.length() in 
-            while not i = len loop{--一般的花括号要有分号
-               pointer <- pointer + 1;
-               container <- container.concat(s.substr(i, 1));
-               i <- i + 1;
-            }pool;
-         --out_string("now container\n");
-         --out_string(container);
-         --out_string("\n");
-         container;
+         if last < 0 then index <- "-03" else
+         {
+            if last < 100 then index <- index.concat("0") else self fi;
+            if last < 10 then index <- index.concat("0") else self fi;
+            index <- index.concat(atoi.i2a(last));
+         }fi;
+         container <- container.concat(s.concat(index));
+         pointer <- container.length() - 3;
       }
+   };
+
+   (* pop(): pop the stack's top frame 
+    * return this frame's content
+    * Trying to pop an empty stack will output error and abort
+    *)
+   pop() : String{
+      if isempty()
+      then
+      {
+         out_string("Error: popped empty stack\n");
+         abort();
+         "";
+      }
+      else
+         let out : String <- "", last : Int in
+         {
+            last <- atoi.a2i(container.substr(pointer, 3));
+            out <- container.substr(last + 3, pointer-last-3);
+            container <- container.substr(0, container.length() - (pointer-last));
+            pointer <- last;
+            out;
+         }
+      fi
+   };
+
+   opr_add() : Int{
+      1
    };
 };
 
@@ -50,42 +96,18 @@ class Main inherits IO {
    main() : Object 
    {
       {
-         out_string("Welcome to my stack\n");   
-         while not lstc = "x" loop
+         out_string("Welcome to my stack.\n");
+         out_string("> ");
+         inp <- in_string();   
+         while not inp = "x" loop
          {
+            if inp.length() = 0 then self else s.push(inp) fi;
             out_string("> ");
             inp <- in_string();
-            --out_int(inp.length());
-            let i : Int <- 0, len : Int <- inp.length() in
-            {
-               while not i = len 
-               loop
-                  if inp.substr(i, 1) = "x" 
-                  then 
-                  {
-                     len <- i+1;
-                     i <- i+1;
-                  } 
-                  else
-                  {
-                     if inp.substr(i, 1) = "d" 
-                     then 
-                     {
-                        --out_string("trying to out \n");
-                        out_string(s.show());
-                     }
-                     else
-                     {
-                        --out_string(inp.substr(i, 1));
-                        s.push(inp.substr(i, 1));
-                        self;
-                     }fi;
-                     i <- i + 1;
-                  }fi
-               pool;
-               lstc <- if 0 < i then inp.substr(i - 1, 1) else "" fi; 
-            };
          }pool;
+         s.show(true);
+         while not s.isempty() loop s.pop() pool;
+         s.show(true);
       }
    };
 
